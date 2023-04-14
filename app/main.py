@@ -58,6 +58,7 @@ class MainApplication():
                                   axis=0,
                                   ignore_index=True)        
         lan_detect_df.dropna(inplace=True)
+        lan_detect_df.sample(frac=1).reset_index(drop=True)
         
         lan_detect_df.to_csv('C:\Dataset\\europarl.csv', index=False)
 
@@ -68,8 +69,6 @@ class MainApplication():
         self.data_analysis.understanding_data(df)
         self.data_analysis.language_distribution(df)
 
-    def spliting_data(self, dataframe: pd.DataFrame) -> pd.DataFrame:
-        self.model.training_testing_data(dataframe=dataframe)
 
 if __name__ == "__main__":
     start_app = MainApplication()
@@ -83,4 +82,8 @@ if __name__ == "__main__":
 
     # start_app.ed_analysis(df)
 
-    start_app.spliting_data(df)
+    train_df, test_df = start_app.model.training_testing_data(df)
+
+    # start_app.ed_analysis(train_df)
+
+    start_app.model.training_model(train_df, test_df)
