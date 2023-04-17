@@ -57,10 +57,11 @@ class Models():
         ]
 
     def sampling_data(self, dataframe: pd.DataFrame, lang: str) -> pd.DataFrame:
-
+        '''This function is used to extract 25% of random samples from each unique values of language'''
         return dataframe[dataframe['language']==lang].sample(frac=0.75)
     
     def training_testing_data(self, dataframe: pd.DataFrame):
+        '''This function is used to creating traing and testing data'''
         dataframe['language'] = self.label.fit_transform(dataframe['language'])
         training_df = pd.DataFrame()
         testing_df = pd.DataFrame()
@@ -76,11 +77,18 @@ class Models():
         return training_df, testing_df
     
     def model_search(self, grp: list, training_df: pd.DataFrame, testig_df: pd.DataFrame) -> dict:
+        '''This function is used to implement GridSearchCV for all the 4 algorithems at the same time and returns a list of dict'''
         print('\n\n', grp[0], '\n\n')
-        grid_search = GridSearchCV(estimator=grp[1], param_grid=grp[2], n_jobs=20, cv=10, verbose=2)
+        grid_search = GridSearchCV(
+            estimator=grp[1],
+            param_grid=grp[2],
+            n_jobs=20,
+            cv=10,
+            verbose=2)
         grid_search.fit(training_df['Text'], training_df['language'])
         testig_df[f'{grp[0]}_pred'] = self.label.inverse_transform(grid_search.predict(testig_df['Text']))
         pp.pprint('\n\n********', grid_search.best_params_, '********\n\n')
+
         # save the model to disk
         filename = f'{grp[0]}_model.pkl'
         joblib.dump(grid_search.best_estimator_, open(f'C:\\Dataset\\models\\{filename}'))
@@ -89,20 +97,16 @@ class Models():
         return {f'{grp[0]}': grid_search.score(testig_df['Text'], testig_df['language'])}
     
     def training_model(self, training_df: pd.DataFrame, testig_df: pd.DataFrame):
-        # for grp in self.list_of_models:
-        #     print('\n\n', grp[0], '\n\n')
-            # grid_search = GridSearchCV(estimator=grp[1], param_grid=grp[2], n_jobs=20, cv=10, verbose=2)
-            # grid_search.fit(training_df['Text'], training_df['language'])
-            # final_result[grp[0]] = grid_search.score(testig_df['Text'], testig_df['language'])
-            # testig_df[f'{grp[0]}_pred'] = self.label.inverse_transform(grid_search.predict(testig_df['Text']))
-            # testig_df[f'{grp[0]}_pred'] = self.label.inverse_transform(testig_df[f'{grp[0]}_pred'])
-            # pp.pprint('\n\n********', grid_search.best_params_, '********\n\n')
-            # # save the model to disk
-            # filename = f'{grp[0]}_model.pkl'
-            # joblib.dump(grid_search.best_estimator_, open(f'C:\\Dataset\\models\\{filename}'))
-            # gc.collect()
-
-        final_result = Parallel(n_jobs=(len(self.list_of_models)), backend='threading', prefer='threads')(delayed(self.model_search)(model, training_df, testig_df) for model in self.list_of_models)
+        '''This function performs Parallel Hyper parameter threading for 4 algorithems and selects the best estimator with best paramters with the help of GridSearchCV.'''
+        final_result = Parallel(
+            n_jobs=(len(self.list_of_models)),
+            backend='threading',
+            prefer='threads')(
+            delayed(self.model_search)(
+            model,
+            training_df,
+            testig_df)
+            for model in self.list_of_models)
 
         testig_df['language'] = self.label.inverse_transform(testig_df['language'])
         pp.pprint(final_result)
