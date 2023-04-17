@@ -23,10 +23,10 @@ class Models():
             dict(
             penalty = ['l1', 'l2', 'elasticnet', None],
             dual = [True, False],
-            C = [_ for _ in range(1, 101, 10)],
-            random_state = [_ for _ in range(1, 55, 6)],
+            C = sp_randint(10, 101).rvs(5),
+            random_state = sp_randint(1, 56).rvs(5),
             solver = ['lbfgs', 'liblinear', 'newton-cg', 'newton-cholesky', 'sag', 'saga'],
-            max_iter = [_ for _ in range(100, 501, 100)],
+            max_iter = sp_randint(10, 101).rvs(5),
             multi_class = ['auto', 'ovr', 'multinomial'])),
             (
             'KNNClassifier',
@@ -40,13 +40,13 @@ class Models():
             'SVM',
             SVC(),
             dict(
-            C = [_ for _ in range(1, 101, 10)],
+            C = sp_randint(10, 101).rvs(5),
             kernel = ['linear', 'poly', 'rbf', 'sigmoid', 'precomputed'])),
             (
             'RandomForest',
             RandomForestClassifier(),
             dict(
-            n_estimators = [_ for _ in range(100, 500, 100)],
+            n_estimators = sp_randint(10, 101).rvs(5),
             max_depth = [3, None],
             max_features = ['sqrt', 'log2', None],
             min_samples_split = sp_randint(2, 11).rvs(5),
